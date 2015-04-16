@@ -30,5 +30,5 @@ setuptools.setup(
     version=VERSION,
     packages=setuptools.find_packages(),
     tests_require=['pytest'],
-    cmdclass = {'test': PyTest},
+    cmdclass={'test': PyTest},
 )
