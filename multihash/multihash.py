@@ -1,8 +1,21 @@
 import collections
 import struct
+import six
 from . import exceptions as exc
 from . import constants
 
+def len_compat(digest):
+    if six.PY3 and isinstance(digest, str):
+        return len(digest.encode('utf8'))
+    if six.PY2 and isinstance(digest, unicode):
+        return len(digest.encode('utf8'))
+    return len(digest)
+
+
+def digest_compat(digest):
+    if six.PY3 and isinstance(digest, bytes):
+        return digest.decode('utf8')
+    return digest
 
 def ident_name_code(ident):
     'Coerce hash ident (name or code) to tuple (name, code)'
@@ -17,16 +30,18 @@ _MultiHash = collections.namedtuple('MultiHash', 'name code length digest')
 class MultiHash(_MultiHash):  # NOQA
 
     def __new__(cls, ident, digest, length=None):
-        if length and len(digest) != length:
+        len_digest = len_compat(digest)
+        if length and len_digest != length:
             raise exc.InconsistentLen('Digest length should be equal to '
                                       'specified length.')
-        else:
-            length = len(digest)
+        if not length:
+            length = len_digest
         if length > 127:
             raise exc.LenNotSupported('Multihash does not yet support digests '
                                       'longer than 127 bytes')
         name, code = ident_name_code(ident)
-        return super(MultiHash, cls).__new__(cls, name, code, length, digest)
+        init_args = cls, name, code, length, digest_compat(digest)
+        return super(MultiHash, cls).__new__(*init_args)
 
     def __eq__(self, other):
         conditions = (
@@ -39,8 +54,12 @@ class MultiHash(_MultiHash):  # NOQA
 
     def encode(self):
         struct_fmt = "BB{0}s".format(self.length)
-        digest_bytes = map(ord, self.digest)
-        return struct.pack(struct_fmt, self.code, self.length, self.digest)
+        if six.PY3:
+            digest = self.digest.encode('utf-8')
+        else:
+            digest = self.digest
+        struct_args = self.code, self.length, digest
+        return struct.pack(struct_fmt, *struct_args)
 
 
 def decode(mh_bytes):
