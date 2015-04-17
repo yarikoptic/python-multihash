@@ -24,7 +24,7 @@ VERSION = '0.0.1'
 
 setuptools.setup(
     name='multihash',
-    desciption='An implementation of Multihash in Python',
+    description='An implementation of Multihash in Python',
     author='bmcorser',
     author_email='bmcorser@gmail.com',
     version=VERSION,
