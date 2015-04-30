@@ -6,11 +6,10 @@ import sys
 import six
 
 # Optional SHA-3 hashing via pysha3
-if sys.version_info < (3, 4):
-    try:
-        import sha3
-    except ImportError:
-        sha3 = None
+try:
+    import sha3
+except ImportError:
+    sha3 = None
 
 # Optional BLAKE2 hashing via pyblake2
 try:
@@ -36,7 +35,7 @@ NAMES = {
     'blake2s':  BLAKE2S,
 }
 
-CODES = dict((v, k) for k, v in NAMES.iteritems())
+CODES = dict((v, k) for k, v in NAMES.items())
 
 LENGTHS = {
     'sha1':    20,
@@ -53,11 +52,7 @@ FUNCS = {
     SHA2_512: hashlib.sha512,
 }
 
-if sys.version_info < (3, 4):
-    if sha3:
-        FUNCS[SHA3] = lambda: hashlib.new('sha3_512')
-
-else:
+if sha3:
     FUNCS[SHA3] = lambda: hashlib.new('sha3_512')
 
 if pyblake2:
@@ -100,7 +95,6 @@ def is_valid_code(code):
         return code in CODES
 
     else:
-        print '!? code', repr(code)
         return False
 
 
@@ -130,20 +124,16 @@ def decode(buf):
 def encode(digest, code):
     """Encode a hash digest along with the specified function code.
 
-    >>> encoded = encode(b'testing', SHA1)
+    >>> encoded = encode('testing', SHA1)
     >>> len(encoded)
     22
     >>> encoded[:2]
     bytearray(b'\\x11\\x07')
 
-    >>> if SHA3 in FUNCS:
-    ...     encoded = encode(b'works with sha3?', SHA3)
-    ...     len(encoded)
-    ...
+    >>> encoded = encode('works with sha3?', SHA3)
+    >>> len(encoded)
     66
-    >>> if SHA3 in FUNCS:
-    ...     encoded[:2]
-    ...
+    >>> encoded[:2]
     bytearray(b'\\x14\\x10')
     """
     if not is_valid_code(code):
@@ -153,8 +143,12 @@ def encode(digest, code):
         raise ValueError('Multihash does not support digest length > 127')
 
     hashfn = _hashfn(code)
-    hashfn.update(digest)
 
-    buffer = bytearray([code, len(digest)])
-    buffer.extend(hashfn.digest())
-    return six.b(buffer)
+    if isinstance(digest, six.binary_type):
+        hashfn.update(digest)
+    elif isinstance(digest, six.string_types):
+        hashfn.update(digest.encode('utf-8'))
+
+    output = bytearray([code, len(digest)])
+    output.extend(hashfn.digest())
+    return output
