@@ -1,3 +1,5 @@
+"""Multihash implementation in Python."""
+
 import hashlib
 import sys
 
@@ -18,12 +20,12 @@ except ImportError:
 
 
 # Constants
-SHA1     = 0x11
+SHA1 = 0x11
 SHA2_256 = 0x12
 SHA2_512 = 0x13
-SHA3     = 0x14
-BLAKE2B  = 0x40
-BLAKE2S  = 0x41
+SHA3 = 0x14
+BLAKE2B = 0x40
+BLAKE2S = 0x41
 
 NAMES = {
     'sha1':     SHA1,
@@ -80,8 +82,8 @@ def _hashfn(hashfn):
     raise ValueError('Unknown hash function "{0}"'.format(hashfn))
 
 
-
 def is_app_code(code):
+    """Check if the code is an application specific code."""
     if isinstance(code, six.integer_types):
         return code >= 0 and code < 0x10
 
@@ -90,6 +92,7 @@ def is_app_code(code):
 
 
 def is_valid_code(code):
+    """Check if the digest algorithm code is valid."""
     if is_app_code(code):
         return True
 
@@ -103,7 +106,6 @@ def is_valid_code(code):
 
 def decode(buf):
     """Decode a hash from the given Multihash."""
-
     if len(buf) < 3:
         raise ValueError('Buffer too short')
 
@@ -144,7 +146,6 @@ def encode(digest, code):
     ...
     bytearray(b'\\x14\\x10')
     """
-
     if not is_valid_code(code):
         raise TypeError('Unknown code')
 
