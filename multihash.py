@@ -1,6 +1,7 @@
 """Multihash implementation in Python."""
 
 import hashlib
+import struct
 import sys
 
 import six
@@ -99,18 +100,27 @@ def is_valid_code(code):
 
 
 def decode(buf):
-    """Decode a hash from the given Multihash."""
+    r"""Decode a hash from the given Multihash.
+
+    After validating the hash type and length in the two prefix bytes, this
+    function removes them and returns the raw hash.
+
+    >>> encoded = b'\x11\x14\xc3\xd4XGWbx`AAh\x01%\xa4o\xef9Nl('
+    >>> bytearray(decode(encoded))
+    bytearray(b'\xc3\xd4XGWbx`AAh\x01%\xa4o\xef9Nl(')
+
+    >>> decode(encoded) == encoded[2:] == hashlib.sha1(b'thanked').digest()
+    True
+    """
     if len(buf) < 3:
         raise ValueError('Buffer too short')
 
     if len(buf) > 129:
         raise ValueError('Buffer too long')
 
-    buf = six.b(buf)
-    code = buf[0]
-    try:
-        length = LENGTHS[code]
-    except KeyError:
+    code, length = struct.unpack('BB', buf[:2])
+
+    if not is_valid_code(code):
         raise ValueError('Invalid code "{0}"'.format(code))
 
     digest = buf[2:]
