@@ -62,6 +62,21 @@ if pyblake2:
 
 
 def _hashfn(hashfn):
+    """Return an initialised hash object, by function, name or integer id
+
+    >>> _hashfn(SHA1) # doctest: +ELLIPSIS
+    <sha1 HASH object @ 0x...>
+
+    >>> _hashfn('sha2-256') # doctest: +ELLIPSIS
+    <sha256 HASH object @ 0x...>
+    >>> _hashfn('18') # doctest: +ELLIPSIS
+    <sha256 HASH object @ 0x...>
+
+    >>> _hashfn('md5')
+    Traceback (most recent call last):
+      ...
+    ValueError: Unknown hash function "md5"
+    """
     if six.callable(hashfn):
         return hashfn()
 
@@ -79,7 +94,13 @@ def _hashfn(hashfn):
 
 
 def is_app_code(code):
-    """Check if the code is an application specific code."""
+    """Check if the code is an application specific code.
+
+    >>> is_app_code(SHA1)
+    False
+    >>> is_app_code(0)
+    True
+    """
     if isinstance(code, six.integer_types):
         return code >= 0 and code < 0x10
 
@@ -88,7 +109,13 @@ def is_app_code(code):
 
 
 def is_valid_code(code):
-    """Check if the digest algorithm code is valid."""
+    """Check if the digest algorithm code is valid.
+
+    >>> is_valid_code(SHA1)
+    True
+    >>> is_valid_code(0)
+    True
+    """
     if is_app_code(code):
         return True
 
