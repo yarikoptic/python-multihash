@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='multihash',
-    version='0.1.0',
+    version='0.1.1',
     py_modules=['multihash'],
     author='Wijnand Modderman-Lenstra',
     author_email='maze@pyth0n.org',
