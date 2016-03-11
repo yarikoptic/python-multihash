@@ -1,6 +1,7 @@
 import pytest
 import multihash
 
+
 @pytest.mark.parametrize('args,exception', (
     (('frob-35', 'a'), multihash.exceptions.UnknownCode),
     (('sha1', 'a', 100), multihash.exceptions.InconsistentLen),
@@ -8,16 +9,20 @@ import multihash
     (('sha1', 'a' * 200), multihash.exceptions.LenNotSupported),
 ))
 def test_decode_raises(args, exception):
+    """Test multihash exceptions."""
     with pytest.raises(exception):
         multihash.MultiHash(*args)
 
+
 def test_object_eq():
+    """Test multihash equalilty."""
     a = multihash.MultiHash('sha1', 'a')
     b = multihash.MultiHash('sha1', 'a')
     assert a == b
 
 
 def test_object_neq():
+    """Test multihash inequalilty."""
     a = multihash.MultiHash('sha1', 'a')
     b = multihash.MultiHash('sha1', 'b')
     assert a != b
