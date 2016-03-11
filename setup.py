@@ -1,17 +1,36 @@
-from distutils.core import setup
+import sys
+import setuptools
+from setuptools.command.test import test as TestCommand
 
 
-setup(
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        pass
+
+    def run_tests(self):
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
+VERSION = '0.0.1'
+
+setuptools.setup(
     name='multihash',
-    version='0.1.1',
-    py_modules=['multihash'],
-    author='Wijnand Modderman-Lenstra',
-    author_email='maze@pyth0n.org',
-    maintainer='Wijnand Modderman-Lenstra',
-    maintainer_email='maze@pyth0n.org',
+    description='An implementation of Multihash in Python',
+    author='bmcorser',
+    author_email='bmcorser@gmail.com',
+    version=VERSION,
     url='https://github.com/tehmaze/python-multihash',
     keywords='multihash sha1 sha2 sha3 blake2',
-    platforms='POSIX, Windows',
     license='MIT',
-    description='multihash implementation in Python',
+    packages=setuptools.find_packages(),
+    tests_require=['pytest'],
+    install_requires=['six'],
+    cmdclass={'test': PyTest},
 )
