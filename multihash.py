@@ -158,8 +158,10 @@ def decode(buf):
     return digest
 
 
-def encode(digest, code):
-    """Encode a hash digest along with the specified function code.
+def encode(content, code):
+    """Encode a binary or text string using the digest function corresponding
+    to the given code.  Returns the hash of the content, prefixed with the
+    code and the length of the digest, according to the Multihash spec.
 
     >>> encoded = encode('testing', SHA1)
     >>> len(encoded)
@@ -176,16 +178,17 @@ def encode(digest, code):
     if not is_valid_code(code):
         raise TypeError('Unknown code')
 
+    hashfn = _hashfn(code)
+
+    if isinstance(content, six.binary_type):
+        hashfn.update(content)
+    elif isinstance(content, six.string_types):
+        hashfn.update(content.encode('utf-8'))
+
+    digest = hashfn.digest()
     if len(digest) > 127:
         raise ValueError('Multihash does not support digest length > 127')
 
-    hashfn = _hashfn(code)
-
-    if isinstance(digest, six.binary_type):
-        hashfn.update(digest)
-    elif isinstance(digest, six.string_types):
-        hashfn.update(digest.encode('utf-8'))
-
     output = bytearray([code, len(digest)])
-    output.extend(hashfn.digest())
+    output.extend(digest)
     return output
