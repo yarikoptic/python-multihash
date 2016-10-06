@@ -1,0 +1,22 @@
+# vim ft=yaml
+# travis-ci.org definition for python-multihash build
+language: python
+sudo: false
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+  - "pypy3"
+cache:
+  - pip
+
+install:
+  - travis_retry pip install -q codecov nose
+
+script:
+  - nosetests --with-doctest --doctest-tests --with-coverage -s -v multihash.py
+
+after_success:
+  - codecov
